@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pendataan Makan Karyawan</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    h1, h2, h3 {
+      margin: 5px;
+    }
+    #rfidInput {
+      opacity: 0;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <h2>Selamat Datang</h2>
+  <h1>Pendataan Makan Karyawan</h1>
+
+  <input id="rfidInput" autofocus>
+
+  <h3>Nama: <span id="nama">...</span></h3>
+  <h3>Status Makan: <span id="ismakan">...</span></h3>
+
+  <script>
+    const input = document.getElementById("rfidInput");
+    const namaKyw = document.getElementById("nama");
+    const isMakan = document.getElementById("ismakan");
+
+    // pastikan input selalu fokus
+    setInterval(() => input.focus(), 300);
+
+    let timer = null;
+
+    input.addEventListener("input", () => {
+      if (timer) clearTimeout(timer);
+
+      // tunggu 300ms untuk menganggap scan selesai
+      timer = setTimeout(async () => {
+        const rfid = input.value.trim();
+        if (!rfid || rfid.length < 3) return;
+
+        try {
+          const res = await fetch("/api/makan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rfid })
+          });
+          const result = await res.json();
+
+          if (result.data) {
+            namaKyw.textContent = result.data.nama;
+            isMakan.textContent = result.data.ismakan === 1 ? "Sudah Makan" : "Belum Makan";
+          } else {
+            namaKyw.textContent = "Tidak ditemukan";
+            isMakan.textContent = "-";
+          }
+        } catch (err) {
+          namaKyw.textContent = "Error Backend";
+          isMakan.textContent = "-";
+        }
+
+        input.value = ""; // reset untuk scan berikutnya
+      }, 300);
+    });
+  </script>
+</body>
+</html>
