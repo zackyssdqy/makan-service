@@ -52,7 +52,7 @@
           if (!rfid || rfid.length < 3) return;
 
           try {
-            const res = await fetch("http://localhost:8002/employee/makan", {
+            const res = await fetch("https://services.ama.id/employee/makan", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ rfid }),
