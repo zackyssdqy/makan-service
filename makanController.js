@@ -17,7 +17,11 @@ module.exports = {
       const shift2_out = { mulai: "17:30:00", selesai: "19:00:00" };
 
       let now = new Date();
-      let jamScan = now.toTimeString().split(" ")[0]; // ambil "HH:MM:SS"
+      // let jamScan = now.toTimeString().split(" ")[0];
+      console.log("HAlooo disini");
+      
+      let jamScan = "10:20:00";
+
 
       let ismakan = null;
       let actMkn = null;
@@ -81,7 +85,7 @@ module.exports = {
           return res.json({
             message: `Scan diluar jam`,
             data: {
-              nama: "Scan diluar jam",
+              nama: data.nama,
               jamScan: jamScan,
             },
           });
@@ -114,9 +118,9 @@ module.exports = {
           actMkn = 1;
         } else {
           return res.json({
-            message: "Scan diluar jam",
+            message: `Scan diluar jam`,
             data: {
-              nama: "Scan diluar jam",
+              nama: data.nama,
               jamScan: jamScan,
             },
           });

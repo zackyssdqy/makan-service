@@ -30,15 +30,15 @@
 
     <input id="rfidInput" autofocus />
 
-    <div style="margin-top: 10px;">
+    <div style="margin-top: 10px">
       <h3><span id="nama">NAMA</span></h3>
-      <!-- <h3><span id="ismakan">STATUS</span></h3> -->
+      <h3><span id="message"></span></h3>
     </div>
 
     <script>
       const input = document.getElementById("rfidInput");
       const namaKyw = document.getElementById("nama");
-      // const isMakan = document.getElementById("ismakan");
+      const message = document.getElementById("message");
 
       setInterval(() => input.focus(), 500);
 
@@ -52,14 +52,13 @@
           if (!rfid || rfid.length < 3) return;
 
           try {
-            const res = await fetch("https://services.ama.id/employee/makan", {
+            const res = await fetch("http://localhost:8002/employee/makan", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ rfid }),
             });
             const result = await res.json();
             console.log("response", result);
-            
 
             // let statusText = "";
             // if (result.data.ismakan === 1 && result.data.actual_makan === 0) {
@@ -74,6 +73,9 @@
 
             if (result.data) {
               namaKyw.textContent = result.data.nama;
+              result.message === "Scan diluar jam"
+                ? (message.textContent = result.message)
+                : "";
               // isMakan.textContent = statusText;
             } else {
               namaKyw.textContent = "Tidak ditemukan";
