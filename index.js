@@ -19,7 +19,7 @@
 const express = require("express");
 require("dotenv").config();
 const path = require("path");
-const { makan } = require("./makanController"); 
+const { makan } = require("./makanController");
 const cors = require("cors");
 
 const app = express();
@@ -28,15 +28,13 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
-
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-
-
 app.post("/makan", makan);
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server running at http://0.0.0.0:${port}`);
+  console.log(`Akses dari device lain: http://<IP_RASPI>:${port}`);
 });
