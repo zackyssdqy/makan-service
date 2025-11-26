@@ -8,6 +8,23 @@ module.exports = {
       let { rfid } = req.body;
       let uuid = uuidv4();
       let tanggal = new Date().toISOString().split("T")[0];
+      console.log("tanggallll", tanggal);
+
+      const shift1_in = { mulai: "06:00:00", selesai: "10:00:00" };
+      const shift1_out = { mulai: "11:30:00", selesai: "14:30:00" };
+
+      const shift2_in = { mulai: "14:00:00", selesai: "15:00:00" };
+      const shift2_out = { mulai: "17:30:00", selesai: "19:00:00" };
+
+      let now = new Date();
+      let jamScan = now.toTimeString().split(" ")[0]; // ambil "HH:MM:SS"
+
+      let ismakan = null;
+      let actMkn = null;
+
+      function isWaktuMakan(jam, shift) {
+        return jam >= shift.mulai && jam <= shift.selesai;
+      }
 
       //ambil data karyawan dari rfid
       let ambilData = await request.query(
@@ -27,39 +44,107 @@ module.exports = {
         [data.m_karyawan_id, tanggal]
       );
 
+      // if (data.ismakan === 1 && data.actual_makan === 1) {
+      //   return res.json({
+      //     message: ``,
+      //     data: {
+      //       nama: data.nama,
+      //       ismakan: data.ismakan,
+      //       actual_makan: data.actual_makan,
+      //       jamScan: jamScan,
+      //     },
+      //   });
+      // }
+
       if (cekMakan[0].length > 0) {
         //kalau sudah scan makan, update ismakan = 1
 
-        await request.query(
-          `update m_makan_karyawan set ismakan=1 where m_karyawan_id=? and tanggal =?`,
-          [data.m_karyawan_id, tanggal]
-        );
+        if (
+          isWaktuMakan(jamScan, shift1_in) ||
+          isWaktuMakan(jamScan, shift2_in)
+        ) {
+          ismakan = 1;
+          await request.query(
+            `update m_makan_karyawan set ismakan=? where m_karyawan_id=? and tanggal =?`,
+            [ismakan, data.m_karyawan_id, tanggal]
+          );
+        } else if (
+          isWaktuMakan(jamScan, shift1_out) ||
+          isWaktuMakan(jamScan, shift2_out)
+        ) {
+          actMkn = 1;
+          await request.query(
+            `update m_makan_karyawan set actual_makan=? where m_karyawan_id=? and tanggal =?`,
+            [actMkn, data.m_karyawan_id, tanggal]
+          );
+        } else {
+          return res.json({
+            message: `Scan diluar jam`,
+            data: {
+              nama: "Scan diluar jam",
+              jamScan: jamScan,
+            },
+          });
+        }
 
         //response data tampilkan nama dan ismakan
-        return res.json({
-          message: `berhasil sudah makan`,
-          data: {
-            m_karyawan_id: data.m_karyawan_id,
-            nama: data.nama,
-            tanggal: tanggal,
-            ismakan: 1,
-          },
-        });
-      } else {
-        //belum scan konfirm makan
-        let queryInsert = `
-        insert into m_makan_karyawan (m_makan_karyawan_id, m_karyawan_id, tanggal, nama, ismakan) 
-        values (?, ?, ?, ?, ?)
-        `;
-        let insertdata = [uuid, data.m_karyawan_id, tanggal, data.nama, 0];
-        await request.query(queryInsert, insertdata);
         return res.json({
           message: `berhasil`,
           data: {
             m_karyawan_id: data.m_karyawan_id,
             nama: data.nama,
             tanggal: tanggal,
-            ismakan: 0,
+            ismakan: ismakan,
+            actual_makan: actMkn,
+            jamScan: jamScan,
+          },
+        });
+      } else {
+        //belum scan konfirm makan
+
+        if (
+          isWaktuMakan(jamScan, shift1_in) ||
+          isWaktuMakan(jamScan, shift2_in)
+        ) {
+          ismakan = 1;
+        } else if (
+          isWaktuMakan(jamScan, shift1_out) ||
+          isWaktuMakan(jamScan, shift2_out)
+        ) {
+          actMkn = 1;
+        } else {
+          return res.json({
+            message: "Scan diluar jam",
+            data: {
+              nama: "Scan diluar jam",
+              jamScan: jamScan,
+            },
+          });
+        }
+
+        let queryInsert = `
+        insert into m_makan_karyawan (m_makan_karyawan_id, m_karyawan_id, tanggal, nama, ismakan, actual_makan) 
+        values (?, ?, ?, ?, ?, ?)
+        `;
+        let insertdata = [
+          uuid,
+          data.m_karyawan_id,
+          tanggal,
+          data.nama,
+          ismakan,
+          actMkn,
+        ];
+        await request.query(queryInsert, insertdata);
+
+        return res.json({
+          message: `berhasil`,
+          data: {
+            m_karyawan_id: data.m_karyawan_id,
+            nama: data.nama,
+            tanggal: tanggal,
+            ismakan: ismakan,
+            actual_makan: actMkn,
+            jamScan: jamScan,
           },
         });
       }
