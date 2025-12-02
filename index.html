@@ -44,7 +44,7 @@
 
       input.addEventListener("input", async () => {
         const rfid = input.value.trim();
-        if (!rfid || rfid.length < 3) return;
+        if (!rfid || rfid.length == 10) return;
 
         message.textContent = "";
         namaKyw.textContent = "";
