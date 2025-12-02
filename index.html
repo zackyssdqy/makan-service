@@ -42,54 +42,39 @@
 
       setInterval(() => input.focus(), 500);
 
-      let timer = null;
+      input.addEventListener("input", async () => {
+        const rfid = input.value.trim();
+        if (!rfid || rfid.length < 3) return;
 
-      input.addEventListener("input", () => {
-        if (timer) clearTimeout(timer);
+        message.textContent = "";
+        namaKyw.textContent = "";
 
-        timer = setTimeout(async () => {
-          const rfid = input.value.trim();
-          if (!rfid || rfid.length < 3) return;
+        try {
+          const res = await fetch("https://services.ama.id/employee/makan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rfid }),
+          });
 
-          try {
-            const res = await fetch("https://services.ama.id/employee/makan", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ rfid }),
-            });
-            const result = await res.json();
-            console.log("response", result);
+          const result = await res.json();
+          console.log("response", result);
 
-            // let statusText = "";
-            // if (result.data.ismakan === 1 && result.data.actual_makan === 0) {
-            //   statusText = "Terdata Makan";
-            // } else if (result.data.ismakan === 1 && result.data.actual_makan === 1) {
-            //   statusText = "Sudah Makan";
-            // } else if (result.data.ismakan === 0 && result.data.actual_makan === 1) {
-            //   statusText = "Tidak terdata makan";
-            // } else {
-            //   statusText = "Scan diluar jam";
-            // }
+          if (result.data) {
+            namaKyw.textContent = result.data.nama;
 
-            if (result.data) {
-              namaKyw.textContent = result.data.nama;
-              result.message === "Scan diluar jam"
-                ? (message.textContent = result.message)
-                : "";
-              // isMakan.textContent = statusText;
-            } else {
-              namaKyw.textContent = "Tidak ditemukan";
-              // isMakan.textContent = "-";
+            if (result.message === "Scan diluar jam") {
+              message.textContent = result.message;
             }
-          } catch (err) {
-            namaKyw.textContent = err;
-            console.log("ERRORRR", err);
-
-            // isMakan.textContent = "-";
+          } else {
+            namaKyw.textContent = "Tidak ditemukan";
+            message.textContent = result.message || "";
           }
+        } catch (err) {
+          namaKyw.textContent = err;
+          console.log("ERRORRR", err);
+        }
 
-          input.value = "";
-        }, 300);
+        input.value = "";
       });
     </script>
   </body>
