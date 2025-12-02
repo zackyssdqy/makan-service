@@ -66,8 +66,8 @@
               message.textContent = result.message;
             }
           } else {
-            namaKyw.textContent = "Tidak ditemukan";
-            message.textContent = result.message || "";
+            // namaKyw.textContent = "Tidak ditemukan";
+            namaKyw.textContent = result.message || "";
           }
         } catch (err) {
           namaKyw.textContent = err;
