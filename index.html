@@ -39,42 +39,50 @@
       const input = document.getElementById("rfidInput");
       const namaKyw = document.getElementById("nama");
       const message = document.getElementById("message");
+      var rfid = "";
 
       setInterval(() => input.focus(), 500);
 
       input.addEventListener("input", async () => {
-        const rfid = input.value.trim();
-        if (rfid.length < 10) return;
 
-        message.textContent = "";
-        namaKyw.textContent = "";
+        if (input.value.trim().length == 10) {
+          rfid = input.value.trim();
 
-        try {
-          const res = await fetch("https://services.ama.id/employee/makan", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ rfid }),
-          });
+          message.textContent = "";
+          namaKyw.textContent = "";
+          console.log(rfid, "=====");
 
-          const result = await res.json();
-          console.log("response", result);
+      
+          try {
+            const res = await fetch("https://services.ama.id/employee/makan", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ rfid }),
+            });
+              
+            const result = await res.json();
+            console.log("response", result);
 
-          if (result.data) {
-            namaKyw.textContent = result.data.nama;
+            if (result.data) {
+              namaKyw.textContent = result.data.nama;
 
-            if (result.message === "Scan diluar jam") {
-              message.textContent = result.message;
+              if (result.message === "Scan diluar jam") {
+                message.textContent = result.message;
+              }
+            } else {
+              // namaKyw.textContent = "Tidak ditemukan";
+              namaKyw.textContent = result.message || "";
             }
-          } else {
-            // namaKyw.textContent = "Tidak ditemukan";
-            namaKyw.textContent = result.message || "";
+            rfid = "";
+            input.value = ""
+          } catch (err) {
+            namaKyw.textContent = err;
+            console.log("ERRORRR", err);
+            rfid = "";
+            input.value = ""
           }
-        } catch (err) {
-          namaKyw.textContent = err;
-          console.log("ERRORRR", err);
+          input.value = "";
         }
-
-        input.value = "";
       });
     </script>
   </body>
