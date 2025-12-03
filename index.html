@@ -54,7 +54,8 @@
 
       
           try {
-            const res = await fetch("https://services.ama.id/employee/makan", {
+            // const res = await fetch("https://services.ama.id/employee/makan", {
+            const res = await fetch("http://localhost:3000/makan", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ rfid }),

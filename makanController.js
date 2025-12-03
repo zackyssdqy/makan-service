@@ -1,5 +1,10 @@
-const { v4: uuidv4 } = require("uuid");
+// const { v4: uuidv4 } = require("uuid");
 const { DBConf } = require("./config");
+
+
+const { v4: uuidv4 } = require("uuid");
+// const { DBEmployee } = require("../../config");
+// const respone = require("../../utils/respone");
 
 module.exports = {
   makan: async function (req, res) {
@@ -8,7 +13,9 @@ module.exports = {
       let { rfid } = req.body;
       let uuid = uuidv4();
       let tanggal = new Date().toISOString().split("T")[0];
-      console.log("tanggallll", tanggal);
+      // let tanggal = "2025-11-27";
+
+      console.log("rfid", rfid, "tanggallll", tanggal);
 
       const shift1_in = { mulai: "06:00:00", selesai: "10:00:00" };
       const shift1_out = { mulai: "11:30:00", selesai: "14:30:00" };
@@ -17,11 +24,8 @@ module.exports = {
       const shift2_out = { mulai: "17:30:00", selesai: "19:00:00" };
 
       let now = new Date();
-      // let jamScan = now.toTimeString().split(" ")[0];
-      console.log("HAlooo disini");
-      
-      let jamScan = "10:20:00";
-
+      let jamScan = now.toTimeString().split(" ")[0];
+      // let jamScan = "12:20:00";
 
       let ismakan = null;
       let actMkn = null;
@@ -36,7 +40,7 @@ module.exports = {
         [rfid]
       );
       if (ambilData[0].length == 0) {
-        return res.status(404).json({ message: "RFID tidak di temukan" });
+        return res.json({ message: "RFID tidak ditemukan" });
       }
 
       let data = ambilData[0][0];
@@ -155,8 +159,37 @@ module.exports = {
     } catch (error) {
       console.log("error", error);
       res.status(500).json({
-        data: "Error! Gagal input data makan",
+        message: "Error! Gagal input data makan",
+        data: error,
+      });
+    }
+  },
+
+  findMakan: async function (req, res) {
+    try {
+      const request = DBEmployee.promise();
+
+      let { tanggal } = req.body;
+      let mkn;
+
+      if (!tanggal || tanggal === "") {
+        let [rows] = await request.query(`select * from m_makan_karyawan`);
+        mkn = rows;
+      } else {
+        let [rows] = await request.query(
+          `select * from m_makan_karyawan WHERE tanggal = ?`,
+          [tanggal]
+        );
+        mkn = rows;
+      }
+
+      return res.send(respone("200", mkn));
+    } catch (error) {
+      console.log("error", error);
+      res.status(500).json({
+        message: error,
       });
     }
   },
 };
+
